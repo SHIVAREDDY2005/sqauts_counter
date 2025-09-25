@@ -41,7 +41,7 @@ def process_video(video_path, placeholder):
                     imlist.append([id, int(lm.x * w), int(lm.y * h)])
 
                 # sit-up logic
-                if len(imlist) >= 15:
+                if len(imlist) >= 27:  # Ensure landmark index exists
                     if imlist[26][2] >= imlist[24][2] and imlist[25][2] >= imlist[23][2]:
                         position = "down"
                     if position == "down" and imlist[26][2] < imlist[24][2] and imlist[25][2] < imlist[23][2]:
@@ -56,9 +56,8 @@ def process_video(video_path, placeholder):
         cap.release()
     return count
 
-
 # ---------------- Live Video Processor ----------------
-class PushupCounter(VideoProcessorBase):
+class SitupCounter(VideoProcessorBase):
     def __init__(self):
         self.count = 0
         self.position = None
@@ -83,7 +82,7 @@ class PushupCounter(VideoProcessorBase):
             for id, lm in enumerate(results.pose_landmarks.landmark):
                 imlist.append([id, int(lm.x * w), int(lm.y * h)])
 
-            if len(imlist) >= 15:
+            if len(imlist) >= 27:
                 if imlist[26][2] >= imlist[24][2] and imlist[25][2] >= imlist[23][2]:
                     self.position = "down"
                 if self.position == "down" and imlist[26][2] < imlist[24][2] and imlist[25][2] < imlist[23][2]:
@@ -95,10 +94,9 @@ class PushupCounter(VideoProcessorBase):
 
         return av.VideoFrame.from_ndarray(image, format="bgr24")
 
-
 # ---------------- Streamlit UI ----------------
 def main():
-    st.title("🏋️ sit-up Counter with Mediapipe")
+    st.title("🏋️ Sit-up Counter with Mediapipe")
 
     mode = st.radio("Choose mode:", ["📹 Upload Video", "🎥 Live Camera"])
 
@@ -115,11 +113,10 @@ def main():
     elif mode == "🎥 Live Camera":
         st.info("Live mode started... do sit-ups in front of your webcam 🎥")
         webrtc_streamer(
-            key="pushup-counter",
-            video_processor_factory=PushupCounter,
+            key="situp-counter",
+            video_processor_factory=SitupCounter,
             media_stream_constraints={"video": True, "audio": False},
         )
-
 
 if __name__ == "__main__":
     main()
